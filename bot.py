@@ -21,7 +21,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 model = "qwen:0.5b" if len(sys.argv) < 2 else sys.argv[1]
 llm = Ollama(model=model)
 
-
 ### Start Ollama server ###
 ollama_server = subprocess.Popen(
     ["ollama", "run", model],
@@ -48,13 +47,17 @@ def load_from_datafile() -> UnstructuredMarkdownLoader:
 
     return UnstructuredMarkdownLoader(str(datafile))
 
+print("Initalizing...")
+
 loader = load_from_datafile()
 docs = loader.load()
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 splits = text_splitter.split_documents(docs)
-vectorstore = Chroma.from_documents(documents=splits, embedding=OllamaEmbeddings(model=model, show_progress=True))
+vectorstore = Chroma.from_documents(documents=splits, embedding=OllamaEmbeddings(model=model, show_progress=False))
 retriever = vectorstore.as_retriever()
+
+print("Data loaded successfully")
 
 
 ### Contextualize question ###
@@ -121,16 +124,16 @@ def chat(session_id: str) -> None:
         while True:
             prompt = input("> ");
 
-            message = conversational_rag_chain.invoke(
+            conversational_rag_chain.invoke(
                 {"input": prompt},
                 config={
                     "configurable": {"session_id": session_id},
                 },
             )
 
-            print(f"{message.content}\n")
+            print(f"{store[session_id].messages[-1].content}\n")
     except KeyboardInterrupt:
         shutdown()
 
-
+print("Chatbot ready")
 chat("42")

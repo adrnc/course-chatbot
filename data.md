@@ -137,7 +137,7 @@ The course includes two exams over the semester:
 - The *Paper-Test*
 (for compatability, we stick to the german names "test" instead of "exam")
 
-Both exams are hold in person (i.e. on premise). Also, for both exams two possibilities to take the exam are offered,
+Both exams are held in person (i.e. on premise). Also, for both exams two possibilities to take the exam are offered,
 and each student is free to take one or both of the takes. For each exam, the better take counts towards the final
 evaluation. 
 
