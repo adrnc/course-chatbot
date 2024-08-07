@@ -2,6 +2,8 @@ import os
 os.environ["USER_AGENT"] = "local"
 
 from pathlib import Path
+import subprocess
+import sys
 
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -16,20 +18,26 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-model = "qwen:0.5b"
+model = "qwen:0.5b" if len(sys.argv) < 2 else sys.argv[1]
 llm = Ollama(model=model)
 
-# start ollama (https://github.com/ollama/ollama) locally like:
-# ollama run "model"
+### Start Ollama server ###
+ollama_server = subprocess.Popen(
+    ["ollama", "run", model],
+    stdin=subprocess.DEVNULL,
+    stdout=subprocess.DEVNULL)
+
+def shutdown():
+    ollama_server.terminate()
 
 
 ### Construct retriever ###
 def load_from_datadir() -> UnstructuredMarkdownLoader:
     datadir = Path(__file__).parent.joinpath("data")
-    files: list[Path] = []
+    files: list[str] = []
 
     for filepath in datadir.glob("**/*.md"):
-        files.append(filepath)
+        files.append(str(filepath))
 
     # TODO: fix
     return UnstructuredMarkdownLoader(files)
@@ -37,7 +45,7 @@ def load_from_datadir() -> UnstructuredMarkdownLoader:
 def load_from_datafile() -> UnstructuredMarkdownLoader:
     datafile = Path(__file__).parent.joinpath("data.md")
 
-    return UnstructuredMarkdownLoader(datafile)
+    return UnstructuredMarkdownLoader(str(datafile))
 
 loader = load_from_datafile()
 docs = loader.load()
@@ -141,6 +149,7 @@ def chat(session_id: str) -> None:
 
             print(f"{message.content}\n")
     except KeyboardInterrupt:
-        pass
+        shutdown()
+
 
 chat("42")
