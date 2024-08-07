@@ -21,6 +21,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 model = "qwen:0.5b" if len(sys.argv) < 2 else sys.argv[1]
 llm = Ollama(model=model)
 
+
 ### Start Ollama server ###
 ollama_server = subprocess.Popen(
     ["ollama", "run", model],
