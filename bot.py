@@ -18,8 +18,11 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-model = "qwen:0.5b" if len(sys.argv) < 2 else sys.argv[1]
+model = "gemma2:2b" if len(sys.argv) < 2 else sys.argv[1]
+print(f'Using ollama model "{model}"')
+
 llm = Ollama(model=model)
+
 
 ### Start Ollama server ###
 ollama_server = subprocess.Popen(
