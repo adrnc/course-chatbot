@@ -19,12 +19,13 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 model = "gemma2:2b" if len(sys.argv) < 2 else sys.argv[1]
-print(f'Using ollama model "{model}"')
+print(f'Using Ollama model "{model}"')
 
 llm = Ollama(model=model)
 
 
 ### Start Ollama server ###
+print ("Starting Ollama server")
 ollama_server = subprocess.Popen(
     ["ollama", "run", model],
     stdin=subprocess.DEVNULL,
