@@ -115,26 +115,6 @@ conversational_rag_chain = RunnableWithMessageHistory(
     output_messages_key="answer",
 )
 
-conversational_rag_chain.invoke(
-    {"input": "What is Task Decomposition?"},
-    config={
-        "configurable": {"session_id": "abc123"}
-    },  # constructs a key "abc123" in `store`.
-)
-
-conversational_rag_chain.invoke(
-    {"input": "What are common ways of doing it?"},
-    config={"configurable": {"session_id": "abc123"}},
-)
-
-for message in store["abc123"].messages:
-    if isinstance(message, AIMessage):
-        prefix = "AI"
-    else:
-        prefix = "User"
-
-    print(f"{prefix}: {message.content}\n")
-
 def chat(session_id: str) -> None:
     try:
         while True:
