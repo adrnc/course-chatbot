@@ -115,7 +115,7 @@ history_aware_retriever = create_history_aware_retriever(
 
 ### Answer question ###
 prompt_file = Path(__file__).parent.joinpath("data/prompt.txt")
-system_prompt = f"{prompt_file.read_text().strip()}" + "\n\n{context}"
+system_prompt = prompt_file.read_text() + "{context}"
 qa_prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system_prompt),
