@@ -158,9 +158,7 @@ def chat(session_id: str) -> None:
             )
 
             ai_message = store[session_id].messages[-1]
-
-            print(store[session_id].messages)
-            print(f"{str(ai_message.content).strip()}\n")
+            print(str(ai_message.content).strip())
     except KeyboardInterrupt:
         pass
 
