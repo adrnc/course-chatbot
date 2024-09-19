@@ -155,4 +155,4 @@ cython_debug/
 chroma
 
 # Cached info
-datahash.txt
+contenthash.txt

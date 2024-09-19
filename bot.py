@@ -75,8 +75,8 @@ def init_chroma(collection_name: str, datafile: Path, data_updated: bool, embedd
 
 print("Initalizing...")
 
-datafile = Path(__file__).parent.joinpath("data.md")
-datahashfile = Path(__file__).parent.joinpath("datahash.txt")
+datafile = Path(__file__).parent.joinpath("data/content.md")
+datahashfile = Path(__file__).parent.joinpath("data/contenthash.txt")
 collection_name = "data"
 
 data_updated = update_datahash(datafile, datahashfile)
@@ -114,15 +114,8 @@ history_aware_retriever = create_history_aware_retriever(
 
 
 ### Answer question ###
-system_prompt = (
-    "You are an assistant for question-answering tasks. "
-    "Use the following pieces of retrieved context to answer "
-    "the question. If you don't know the answer, say that you "
-    "don't know. Use three sentences maximum and keep the "
-    "answer concise."
-    "\n\n"
-    "{context}"
-)
+prompt_file = Path(__file__).parent.joinpath("data/prompt.txt")
+system_prompt = f"{prompt_file.read_text().strip()}" + "\n\n{context}"
 qa_prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system_prompt),
@@ -164,9 +157,12 @@ def chat(session_id: str) -> None:
                 },
             )
 
-            print(f"{store[session_id].messages[-1].content}\n")
+            ai_message = store[session_id].messages[-1]
+
+            print(store[session_id].messages)
+            print(f"{str(ai_message.content).strip()}\n")
     except KeyboardInterrupt:
         pass
 
-print("Chatbot ready")
+print("Chatbot ready, ask a question:")
 chat("42")
