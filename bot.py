@@ -1,67 +1,96 @@
 import os
 os.environ["USER_AGENT"] = "local"
 
+from hashlib import sha256
 from pathlib import Path
-import subprocess
 import sys
 
+import chromadb
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_chroma import Chroma
 from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain_community.document_loaders import UnstructuredMarkdownLoader
 from langchain_community.embeddings.ollama import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
-model = "gemma2:2b" if len(sys.argv) < 2 else sys.argv[1]
+if len(sys.argv) < 2:
+    print(f"Usage: {sys.argv[0]} [model]")
+
+model = sys.argv[1]
 print(f'Using Ollama model "{model}"')
 
 llm = Ollama(model=model)
 
 
-### Start Ollama server ###
-print ("Starting Ollama server")
-ollama_server = subprocess.Popen(
-    ["ollama", "run", model],
-    stdin=subprocess.DEVNULL,
-    stdout=subprocess.DEVNULL)
-
-def shutdown():
-    ollama_server.terminate()
-
-
 ### Construct retriever ###
-def load_from_datadir() -> UnstructuredMarkdownLoader:
-    datadir = Path(__file__).parent.joinpath("data")
-    files: list[str] = []
+def update_datahash(datafile: Path, datahashfile: Path) -> bool:
+    old_hash = ""
 
-    for filepath in datadir.glob("**/*.md"):
-        files.append(str(filepath))
+    try:
+        old_hash = datahashfile.read_text().strip()
+    except FileNotFoundError:
+        pass
 
-    # TODO: fix
-    return UnstructuredMarkdownLoader(files)
+    new_hash = sha256(datafile.read_text().encode("utf-8")).hexdigest()
 
-def load_from_datafile() -> UnstructuredMarkdownLoader:
-    datafile = Path(__file__).parent.joinpath("data.md")
+    if old_hash == new_hash:
+        return False
 
-    return UnstructuredMarkdownLoader(str(datafile))
+    datahashfile.write_text(new_hash)
+    return True
+
+def init_chroma(collection_name: str, datafile: Path, data_updated: bool, embeddings: OllamaEmbeddings) -> Chroma:
+    client = chromadb.PersistentClient()
+
+    client.get_or_create_collection(collection_name)
+
+    if data_updated:
+        client.delete_collection(collection_name)
+
+        headers_to_split_on = [
+            ("#", "Header 1"),
+            ("##", "Header 2"),
+            ("###", "Header 3"),
+        ]
+        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on)
+        md_header_splits = markdown_splitter.split_text(datafile.read_text())
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        splits = text_splitter.split_documents(md_header_splits)
+
+        collection = client.get_or_create_collection(collection_name)
+        collection.add(
+            ids=[str(i) for i in range(len(splits))],
+            documents=splits # type: ignore
+        )
+
+    return Chroma(client=client, collection_name=collection_name, embedding_function=embeddings)
+
+
 
 print("Initalizing...")
 
-loader = load_from_datafile()
-docs = loader.load()
+datafile = Path(__file__).parent.joinpath("data.md")
+datahashfile = Path(__file__).parent.joinpath("datahash.txt")
+collection_name = "data"
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-splits = text_splitter.split_documents(docs)
-vectorstore = Chroma.from_documents(documents=splits, embedding=OllamaEmbeddings(model=model, show_progress=False))
+data_updated = update_datahash(datafile, datahashfile)
+
+if data_updated:
+    print("Data has changed, updating...")
+else:
+    print("Data has not changed, no update needed")
+
+embeddings = OllamaEmbeddings(model=model)
+vectorstore = init_chroma(collection_name, datafile, data_updated, embeddings)
 retriever = vectorstore.as_retriever()
 
-print("Data loaded successfully")
+print("Initialization and data loading successful")
 
 
 ### Contextualize question ###
@@ -137,7 +166,7 @@ def chat(session_id: str) -> None:
 
             print(f"{store[session_id].messages[-1].content}\n")
     except KeyboardInterrupt:
-        shutdown()
+        pass
 
 print("Chatbot ready")
 chat("42")
