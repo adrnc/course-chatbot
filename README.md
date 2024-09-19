@@ -28,3 +28,5 @@ Running this chatbot requires us to first start the Ollama server. Afterwards we
     ```
 
 Replace `[model]` with your preferred Ollama model. All available models can also be found on the Ollama website [here](https://ollama.com/library). For example, we can start with [`llama3.1:8b`](https://ollama.com/library/llama3.1) model which is Meta's [Llama](https://www.llama.com/) model with version 3.1 configured to take in 8 billion parameters. In what sizes the parameters are available depends on the respective model.
+
+## Example

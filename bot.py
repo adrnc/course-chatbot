@@ -19,10 +19,12 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
 if len(sys.argv) < 2:
-    print(f"Usage: {sys.argv[0]} [model]")
+    print(f"Usage: {sys.argv[0]} [model] [embedding model]")
 
+# TODO: add embedding model
 model = sys.argv[1]
-print(f'Using Ollama model "{model}"')
+embedding_model = "nomic-embed-text" if len(sys.argv) < 3 else sys.argv[2]
+print(f'Using Ollama model "{model}" and embedding "{embedding_model}"')
 
 llm = Ollama(model=model)
 
@@ -86,7 +88,7 @@ if data_updated:
 else:
     print("Data has not changed, no update needed")
 
-embeddings = OllamaEmbeddings(model=model)
+embeddings = OllamaEmbeddings(model=embedding_model)
 vectorstore = init_chroma(collection_name, datafile, data_updated, embeddings)
 retriever = vectorstore.as_retriever()
 
