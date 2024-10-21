@@ -42,10 +42,7 @@ def check_datahash(datafile: Path, datahashfile: Path) -> tuple[bool, str]:
 
     new_hash = sha256(datafile.read_text().encode("utf-8")).hexdigest()
 
-    if old_hash == new_hash:
-        return False
-
-    return True
+    return old_hash == new_hash, new_hash
 
 def update_datahash(datahashfile: Path, new_hash: str):
     datahashfile.write_text(new_hash)
