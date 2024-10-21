@@ -50,11 +50,13 @@ def update_datahash(datafile: Path, datahashfile: Path) -> bool:
 
 def init_chroma(collection_name: str, datafile: Path, data_updated: bool, embeddings: OllamaEmbeddings) -> Chroma:
     client = chromadb.PersistentClient()
+    chroma = Chroma(client=client, collection_name=collection_name, embedding_function=embeddings)
 
-    client.get_or_create_collection(collection_name)
+    if not data_updated:
+        return chroma
 
     if data_updated:
-        client.delete_collection(collection_name)
+        chroma.reset_collection()
 
         headers_to_split_on = [
             ("#", "Header 1"),
@@ -67,13 +69,12 @@ def init_chroma(collection_name: str, datafile: Path, data_updated: bool, embedd
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(md_header_splits)
 
-        collection = client.get_or_create_collection(collection_name)
-        collection.add(
+        chroma.add_documents(
             ids=[str(i) for i in range(len(splits))],
-            documents=splits # type: ignore
+            documents=splits
         )
 
-    return Chroma(client=client, collection_name=collection_name, embedding_function=embeddings)
+    return chroma
 
 
 
