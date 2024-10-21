@@ -152,15 +152,16 @@ def chat(session_id: str) -> None:
         while True:
             prompt = input("> ");
 
-            conversational_rag_chain.invoke(
+            result = conversational_rag_chain.invoke(
                 {"input": prompt},
                 config={
                     "configurable": {"session_id": session_id},
                 },
             )
 
-            ai_message = store[session_id].messages[-1]
-            print(str(ai_message.content).strip())
+            print(f"\nCONTEXT: {"\n\n".join(result["context"]).strip()}")
+
+            print(f"\nANSWER: {result["answer"].strip()}\n")
     except KeyboardInterrupt:
         pass
 
