@@ -19,12 +19,12 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
 if len(sys.argv) < 2:
-    print(f"Usage: {sys.argv[0]} [model] [embedding model]")
+    print(f"Usage: {sys.argv[0]} [model]")
 
-# TODO: add embedding model
+# TODO: add dedicated embedding model?
 model = sys.argv[1]
-embedding_model = "nomic-embed-text" if len(sys.argv) < 3 else sys.argv[2]
-print(f'Using Ollama model "{model}" and embedding "{embedding_model}"')
+embedding_model = model
+print(f'Using Ollama model "{model}" and embedding model "{embedding_model}"')
 
 llm = Ollama(model=model)
 
@@ -117,7 +117,7 @@ history_aware_retriever = create_history_aware_retriever(
 
 ### Answer question ###
 prompt_file = Path(__file__).parent.joinpath("data/prompt.txt")
-system_prompt = prompt_file.read_text() + "{context}"
+system_prompt = prompt_file.read_text()
 qa_prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system_prompt),
