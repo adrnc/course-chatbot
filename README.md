@@ -72,4 +72,4 @@ The top-level `data` folder contains the following files that can be customized:
 - `prompt.txt`: This text file contains the prompt that is passed to the bot.
   There are two placeholders in the prompt, namely `{context}` and `{question}`.
   These are replaced with their generated values. Newlines and whitespace in the prompt
-  is kept as is.
+  is kept as is. The answer by the chatbot should follow directly after.
