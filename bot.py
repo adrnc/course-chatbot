@@ -20,10 +20,11 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
-debug = False
-
 if len(sys.argv) < 2:
     print(f"Usage: {sys.argv[0]} [model]")
+
+# TODO: improve debugging options
+debug = False
 
 # TODO: add dedicated embedding model?
 model = sys.argv[1]
