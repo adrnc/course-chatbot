@@ -30,13 +30,13 @@ debug = False
 model = sys.argv[1]
 embedding_model = model
 
-print(f'Using Ollama model "{model}" and embedding model "{embedding_model}"')
+print(f'Using Ollama model "{model}"')
 
 llm = Ollama(model=model)
 
 
 ### Construct retriever ###
-def check_datahash(datafile: Path, datahashfile: Path) -> tuple[bool, str]:
+def check_datahash(model: str, datafile: Path, datahashfile: Path) -> tuple[bool, str]:
     old_hash = ""
 
     try:
@@ -44,7 +44,8 @@ def check_datahash(datafile: Path, datahashfile: Path) -> tuple[bool, str]:
     except FileNotFoundError:
         pass
 
-    new_hash = sha256(datafile.read_text().encode("utf-8")).hexdigest()
+    text = model + datafile.read_text()
+    new_hash = sha256(text.encode("utf-8")).hexdigest()
 
     return old_hash != new_hash, new_hash
 
@@ -91,12 +92,12 @@ datafile = Path(__file__).parent.joinpath("data/content.md")
 datahashfile = Path(__file__).parent.joinpath("data/contenthash.txt")
 collection_name = "data"
 
-data_updated, new_hash = check_datahash(datafile, datahashfile)
+data_updated, new_hash = check_datahash(model, datafile, datahashfile)
 
 if data_updated:
-    print("Data has changed, updating...")
+    print("Model or data has changed, updating...")
 else:
-    print("Data has not changed, no update needed")
+    print("Model and data has not changed, no update needed")
 
 embeddings = OllamaEmbeddings(model=embedding_model, show_progress=debug)
 vectorstore = init_chroma(collection_name, datafile, data_updated, embeddings)
