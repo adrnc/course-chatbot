@@ -32,7 +32,7 @@ llm = Ollama(model=model)
 
 
 ### Construct retriever ###
-def update_datahash(datafile: Path, datahashfile: Path) -> bool:
+def check_datahash(datafile: Path, datahashfile: Path) -> tuple[bool, str]:
     old_hash = ""
 
     try:
@@ -45,8 +45,10 @@ def update_datahash(datafile: Path, datahashfile: Path) -> bool:
     if old_hash == new_hash:
         return False
 
-    datahashfile.write_text(new_hash)
     return True
+
+def update_datahash(datahashfile: Path, new_hash: str):
+    datahashfile.write_text(new_hash)
 
 def init_chroma(collection_name: str, datafile: Path, data_updated: bool, embeddings: OllamaEmbeddings) -> Chroma:
     client = chromadb.PersistentClient()
@@ -84,7 +86,7 @@ datafile = Path(__file__).parent.joinpath("data/content.md")
 datahashfile = Path(__file__).parent.joinpath("data/contenthash.txt")
 collection_name = "data"
 
-data_updated = update_datahash(datafile, datahashfile)
+data_updated, new_hash = check_datahash(datafile, datahashfile)
 
 if data_updated:
     print("Data has changed, updating...")
@@ -94,6 +96,8 @@ else:
 embeddings = OllamaEmbeddings(model=embedding_model)
 vectorstore = init_chroma(collection_name, datafile, data_updated, embeddings)
 retriever = vectorstore.as_retriever()
+
+update_datahash(datahashfile, new_hash)
 
 print("Initialization and data loading successful")
 
