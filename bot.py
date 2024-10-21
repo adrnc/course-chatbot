@@ -54,24 +54,28 @@ def init_chroma(collection_name: str, datafile: Path, data_updated: bool, embedd
     if not data_updated:
         return chroma
 
-    if data_updated:
-        chroma.reset_collection()
+    chroma.reset_collection()
 
-        headers_to_split_on = [
-            ("#", "Header 1"),
-            ("##", "Header 2"),
-            ("###", "Header 3"),
-        ]
-        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on)
-        md_header_splits = markdown_splitter.split_text(datafile.read_text())
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+    ]
+    markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on)
+    md_header_splits = markdown_splitter.split_text(datafile.read_text())
 
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        splits = text_splitter.split_documents(md_header_splits)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splits = text_splitter.split_documents(md_header_splits)
 
-        chroma.add_documents(
-            ids=[str(i) for i in range(len(splits))],
-            documents=splits
-        )
+    show_progress = embeddings.show_progress
+    embeddings.show_progress = True
+
+    chroma.add_documents(
+        ids=[str(i) for i in range(len(splits))],
+        documents=splits
+    )
+
+    embeddings.show_progress = show_progress
 
     return chroma
 
