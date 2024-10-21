@@ -43,17 +43,17 @@ Replace `[model]` with your preferred Ollama model. All available models can als
 
 ### Example
 
-For example, we can start with [`llama3.1:8b`](https://ollama.com/library/llama3.1) model which is Meta's [Llama](https://www.llama.com/) model with version 3.1 configured to take in 8 billion parameters. In what sizes the parameters are available depends on the respective model.
+For example, we can start with [`gemma2:27b`](https://ollama.com/library/gemma2) model which is Google's [Gemma](https://ai.google.dev/gemma) model with version 2 configured to take in 27 billion parameters. In what sizes the parameters are available depends on the respective model.
 
 1. We first start the Ollama server via:
 
     ```bash
-    ollama run "llama3.1:8b"
+    ollama run "gemma2:27b"
     ```
 2. In a similar fashion, we start the chat bot:
 
     ```bash
-    python bot.py "llama3.1:8b"
+    python bot.py "gemma2:27b"
     ```
 
 The first initialization process may take some time, because the custom content
