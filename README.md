@@ -77,8 +77,9 @@ The top-level `data` folder contains the following files that can be customized:
   Its content can be changed. The bot needs to be restarted in this case.
 - `prompt.txt`: This text file contains the prompt that is passed to the bot.
   There is one placeholder in the prompt, namely `{context}`,
-  which is replaced with its generated values. Newlines and whitespace in the prompt
-  is kept as is. The answer by the chatbot should follow directly after.
+  which is replaced with the queried context required to answer the question.
+  Newlines and whitespace in the prompt is kept as is.
+  The answer by the chatbot should follow directly after.
 
 ## Debugging
 
