@@ -80,6 +80,11 @@ The top-level `data` folder contains the following files that can be customized:
   which is replaced with its generated values. Newlines and whitespace in the prompt
   is kept as is. The answer by the chatbot should follow directly after.
 
+## Debugging
+
+There exists a boolean `debug` variable in the `bot.py` file. When set to true,
+the found context is also displayed with the answer as well as the calls to `OllamaEmbeddings`.
+
 ## Useful Links
 
 - [LangChain chat history tutorial](https://python.langchain.com/docs/tutorials/qa_chat_history/)
