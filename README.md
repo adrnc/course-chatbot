@@ -10,6 +10,12 @@ With every question asked in the chat, the following happens inside our chatbot:
 - The reformulated question and the context are passed to the LLM,
   which tries to formulate a meaningful anwer.
 
+## Tools used
+
+- [LangChain](https://www.langchain.com/)
+- [ChromaDB](https://www.trychroma.com/)
+- [Ollama](https://www.langchain.com/)
+
 ## Installation
 
 Before running the project, we need to install all dependencies. This involves two parts:
@@ -73,3 +79,8 @@ The top-level `data` folder contains the following files that can be customized:
   There is one placeholder in the prompt, namely `{context}`,
   which is replaced with its generated values. Newlines and whitespace in the prompt
   is kept as is. The answer by the chatbot should follow directly after.
+
+## Useful Links
+
+- [LangChain chat history tutorial](https://python.langchain.com/docs/tutorials/qa_chat_history/)
+- [LangChain Chroma usage](https://python.langchain.com/docs/integrations/vectorstores/chroma/)
