@@ -65,9 +65,9 @@ For example, we can start with [`gemma2:9b`](https://ollama.com/library/gemma2) 
     python bot.py "gemma2:9b"
     ```
 
-The first initialization process may take some time, because the custom content
-needs to be contextualized. Once the bot is initialized, we should see a chat prompt,
-where we can ask the bot questions regarding specific topics.
+The first initialization process may take some time, because the model needs to be downloaded,
+and the custom content needs to be contextualized. Once the bot is initialized,
+we should see a chat prompt, where we can ask the bot questions regarding specific topics.
 
 ## Customizing the `data` folder
 
