@@ -1,5 +1,5 @@
 import os
-from typing import Annotated, Sequence, TypedDict
+from typing import Annotated, Any, Sequence, TypedDict
 os.environ["USER_AGENT"] = "local"
 
 from hashlib import sha256
@@ -12,7 +12,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_chroma import Chroma
 from langchain_community.embeddings.ollama import OllamaEmbeddings
 from langchain_community.llms import Ollama
-from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
@@ -20,12 +20,15 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
+debug = False
+
 if len(sys.argv) < 2:
     print(f"Usage: {sys.argv[0]} [model]")
 
 # TODO: add dedicated embedding model?
 model = sys.argv[1]
 embedding_model = model
+
 print(f'Using Ollama model "{model}" and embedding model "{embedding_model}"')
 
 llm = Ollama(model=model)
@@ -42,7 +45,7 @@ def check_datahash(datafile: Path, datahashfile: Path) -> tuple[bool, str]:
 
     new_hash = sha256(datafile.read_text().encode("utf-8")).hexdigest()
 
-    return old_hash == new_hash, new_hash
+    return old_hash != new_hash, new_hash
 
 def update_datahash(datahashfile: Path, new_hash: str):
     datahashfile.write_text(new_hash)
@@ -94,11 +97,12 @@ if data_updated:
 else:
     print("Data has not changed, no update needed")
 
-embeddings = OllamaEmbeddings(model=embedding_model)
+embeddings = OllamaEmbeddings(model=embedding_model, show_progress=debug)
 vectorstore = init_chroma(collection_name, datafile, data_updated, embeddings)
 retriever = vectorstore.as_retriever()
 
-update_datahash(datahashfile, new_hash)
+if data_updated:
+    update_datahash(datahashfile, new_hash)
 
 print("Initialization and data loading successful")
 
@@ -168,15 +172,23 @@ def chat(session_id: str) -> None:
 
     try:
         while True:
-            prompt = input("> ");
+            prompt = input("> ")
 
-            print("...");
+            print("...")
+            result = app.invoke({"input": prompt}, config)
 
-            result = app.invoke({"input": prompt}, config=config)
+            answer = result["answer"].strip()
 
-            print(f"\nCONTEXT: {"\n\n".join(result["context"]).strip()}")
+            if debug:
+                docs_content = [doc.page_content for doc in result["context"]]
 
-            print(f"\nANSWER: {result["answer"].strip()}\n")
+                print(f"\nCONTEXT: {"\n\n".join(docs_content).strip()}")
+                print(f"\nANSWER: {answer}\n")
+            else:
+                print(answer)
+
+
+
     except KeyboardInterrupt:
         pass
 
