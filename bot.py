@@ -185,6 +185,7 @@ def chat(session_id: str) -> None:
                 print(f"\nCONTEXT: {"\n\n".join(docs_content).strip()}")
                 print(f"\nANSWER: {answer}\n")
             else:
+                # TODO: add output streaming
                 print(answer)
 
 
