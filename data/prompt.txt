@@ -4,12 +4,8 @@ Use the following pieces of retrieved context to answer
 the question. If you don't know the answer, say that you
 don't know. Use three sentences maximum and keep the
 answer concise.
-The context starts after the prefix "CONTEXT:".
-The question starts after the prefix "QUESTION:".
-Your answer starts after the prefix "ANSWER:".
+The context starts after "CONTEXT START" and ends after "CONTEXT END".
 
-CONTEXT: {context}
-
-QUESTION: {question}
-
-ANSWER: 
+CONTEXT START
+{context}
+CONTEXT END
