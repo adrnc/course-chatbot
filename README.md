@@ -31,6 +31,9 @@ Running this chatbot requires us to first start the Ollama server. Afterwards we
     ```bash
     ollama run [model]
     ```
+
+    The first time a Ollama is started with a model, that model needs to be downloaded,
+    which, depending on the model size, can take some time.
 2. Then, after the server has been initialized, start the chat bot by executing the python script as follows:
 
     ```bash
