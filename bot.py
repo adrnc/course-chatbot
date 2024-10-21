@@ -1,4 +1,5 @@
 import os
+from typing import Annotated, Sequence, TypedDict
 os.environ["USER_AGENT"] = "local"
 
 from hashlib import sha256
@@ -9,13 +10,14 @@ import chromadb
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_chroma import Chroma
-from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_community.embeddings.ollama import OllamaEmbeddings
 from langchain_community.llms import Ollama
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.runnables import RunnableConfig
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import START, StateGraph
+from langgraph.graph.message import add_messages
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
 if len(sys.argv) < 2:
@@ -131,33 +133,40 @@ rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chai
 
 
 ### Statefully manage chat history ###
-store = {}
+class State(TypedDict):
+    input: str
+    chat_history: Annotated[Sequence[BaseMessage], add_messages]
+    context: str
+    answer: str
 
-def get_session_history(session_id: str) -> BaseChatMessageHistory:
-    if session_id not in store:
-        store[session_id] = ChatMessageHistory()
-    return store[session_id]
+def call_model(state: State):
+    response = rag_chain.invoke(state)
+    return {
+        "chat_history": [
+            HumanMessage(state["input"]),
+            AIMessage(response["answer"]),
+        ],
+        "context": response["context"],
+        "answer": response["answer"],
+    }
 
+workflow = StateGraph(state_schema=State)
+workflow.add_edge(START, "model")
+workflow.add_node("model", call_model)
 
-conversational_rag_chain = RunnableWithMessageHistory(
-    rag_chain,
-    get_session_history,
-    input_messages_key="input",
-    history_messages_key="chat_history",
-    output_messages_key="answer",
-)
+memory = MemorySaver()
+app = workflow.compile(checkpointer=memory)
 
 def chat(session_id: str) -> None:
+    config: RunnableConfig = {"configurable": {"thread_id": session_id}}
+
     try:
         while True:
             prompt = input("> ");
 
-            result = conversational_rag_chain.invoke(
-                {"input": prompt},
-                config={
-                    "configurable": {"session_id": session_id},
-                },
-            )
+            print("...");
+
+            result = app.invoke({"input": prompt}, config=config)
 
             print(f"\nCONTEXT: {"\n\n".join(result["context"]).strip()}")
 
