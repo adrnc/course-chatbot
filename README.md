@@ -12,9 +12,15 @@ With every question asked in the chat, the following happens inside our chatbot:
 
 ## Tools used
 
-- [LangChain](https://www.langchain.com/)
-- [ChromaDB](https://www.trychroma.com/)
-- [Ollama](https://www.langchain.com/)
+- [LangChain](https://www.langchain.com/): LangChain provides a unified API for using different LLMs
+  for various tasks such as content generation, custom data retrieval and connecting with existing software.
+  In this project it ties together ChromaDB and Ollama to create our chat bot.
+- [ChromaDB](https://www.trychroma.com/): ChromaDB is a vector store used to transform and provide
+  custom data to an LLM. In this project we use it to perform retrieval augmented generation,
+  which provides our chat bot with content based on the context of the question.
+- [Ollama](https://www.ollama.com/): Ollama is a wrapper around different open-source LLMs, allowing to
+  easily download, run and switch out models locally. In this project it handles the content generation
+  based on the queries it receives by LangChain.
 
 ## Installation
 
